@@ -73,10 +73,10 @@
     .t-orange { background: #ffb34d; }
     .t-green  { background: #67d36b; }
 
-    /* GRID: 4 columns × 2 rows (bottom two rows of the in-game 4×4) */
+    /* GRID: 5 columns × 2 rows (bottom two rows of the in-game grid) */
     .grid{
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 8px;
     }
     .cell{
@@ -131,24 +131,27 @@
       <div id="barTop" class="totalbar t-white">0.00</div>
 
       <div class="hint">
-        Grid represents the <b>bottom two rows</b> of the Temple Falls Jungle Adventure state.<br/>
-        Cell value = <b>(cell / bet)</b>. Enter <b>W</b> to count as <b>28</b>.
+        Grid represents the <b>bottom two rows</b> of the Temple Falls Jungle Adventure AP state.<br/>
+        Cell value = <b>(cell / bet)</b>. Enter <b>W</b> to count as <b>28</b>.<br/>
+        Color: &lt;50 red, &lt;60 orange, ≥60 green.
       </div>
     </div>
 
-    <!-- RIGHT: 4×2 grid (all weights are 1× and not shown) -->
+    <!-- RIGHT: 5×2 grid (all weights are 1× and not shown) -->
     <div class="grid" id="grid">
-      <!-- Row 1 (bottom row #3 in the original 4×4) -->
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
+      <!-- Row 1 (bottom row #3 in the original state) -->
+      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
 
-      <!-- Row 2 (bottom row #4 in the original 4×4) -->
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
+      <!-- Row 2 (bottom row #4 in the original state) -->
+      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
     </div>
 
     <!-- BOTTOM total bar (click bar = reset all) -->
@@ -175,8 +178,7 @@
     const n = Number(s);
     if (!Number.isFinite(n)) return 0;
 
-    // rule: cell value = number / bet size
-    return n / bet;
+    return n / bet; // value per your rule
   }
 
   function bandClass(total){
@@ -206,7 +208,6 @@
 
     const bet = parseBet();
     if (!bet) {
-      // bet missing/invalid but user typed something — keep white and show 0
       setBars("0.00", "t-white");
       return;
     }
@@ -214,8 +215,7 @@
     let total = 0;
     for (const inp of inputs) total += cellValue(inp.value, bet);
 
-    const out = total.toFixed(2);
-    setBars(out, bandClass(total));
+    setBars(total.toFixed(2), bandClass(total));
   }
 
   function resetAll(){
@@ -225,15 +225,11 @@
     betEl.focus();
   }
 
-  // Click bars = reset
   barTop.addEventListener("click", resetAll);
   barBottom.addEventListener("click", resetAll);
 
-  // Recalc on changes
   betEl.addEventListener("input", recalc);
-  for (const inp of inputs) {
-    inp.addEventListener("input", recalc);
-  }
+  for (const inp of inputs) inp.addEventListener("input", recalc);
 
   recalc();
 </script>
