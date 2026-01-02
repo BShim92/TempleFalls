@@ -8,7 +8,6 @@
     :root { font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial; }
     body { margin: 10px; }
 
-    /* Split page down the middle */
     .layout{
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -25,18 +24,8 @@
       padding: 8px;
     }
 
-    .betRow{
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .betLabel{
-      font-weight: 800;
-      font-size: 13px;
-      color: #000;
-      white-space: nowrap;
-    }
+    .betRow{ display:flex; gap:8px; align-items:center; }
+    .betLabel{ font-weight:800; font-size:13px; white-space:nowrap; }
 
     .betInput{
       width: 100%;
@@ -50,7 +39,6 @@
       font-weight: 800;
     }
 
-    /* Bottom click-to-reset total bar */
     .totalbar{
       border: 1px solid rgba(0,0,0,.12);
       border-radius: 10px;
@@ -71,7 +59,6 @@
     .t-orange { background: #ffb34d; }   /* <60 */
     .t-green  { background: #67d36b; }   /* >=60 */
 
-    /* GRID: 5 columns × 2 rows */
     .grid{
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -85,10 +72,9 @@
       box-sizing: border-box;
       display: flex;
       align-items: flex-end;
-      background: #d9f2ff; /* same light-blue */
+      background: #d9f2ff;
     }
 
-    /* Allow W, so use text input */
     .cell input{
       width: 100%;
       font-size: 16px;
@@ -110,6 +96,28 @@
     }
 
     .footer{ grid-column: 1 / -1; }
+
+    /* Floating W button (only shows when a cell is focused) */
+    .fab{
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      display: none;
+      gap: 8px;
+      align-items: center;
+      z-index: 9999;
+    }
+    .fab button{
+      border: 1px solid rgba(0,0,0,.18);
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,.12);
+    }
+    .fab button:active{ transform: translateY(1px); }
 
     @media (max-width: 520px){
       .layout{ grid-template-columns: 1fr; }
@@ -133,46 +141,43 @@
       </form>
 
       <div class="hint">
-        Grid is the <b>bottom two rows</b> of the Temple Falls Jungle Adventure AP state.<br/>
-        Cell value = <b>(cell / bet)</b>. Enter <b>W</b> = <b>38</b>.<br/>
-        Total color: &lt;50 red, &lt;60 orange, ≥60 green.<br/>
-        Tip: use the keyboard <b>Next</b> key (or press Return) to jump to the next box.
+        Cell value = (cell / bet). Enter W = 38. Total color: &lt;50 red, &lt;60 orange, ≥60 green.<br/>
+        Tip: keypad is numeric; use the floating <b>W</b> button when needed.
       </div>
     </div>
 
-    <!-- RIGHT: 5×2 grid -->
+    <!-- RIGHT: 5×2 grid (FORM makes Return/Next advance reliably on iPhone) -->
     <form class="grid" id="gridForm" autocomplete="off">
-      <!-- Row 1 -->
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <!-- 10 inputs -->
+      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
 
-      <!-- Row 2 -->
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="done" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="done" /></div>
     </form>
 
     <!-- BOTTOM total bar (click = reset all) -->
     <div id="barBottom" class="totalbar t-white footer">0.00</div>
   </div>
 
+  <!-- Floating W helper -->
+  <div class="fab" id="fab">
+    <button type="button" id="wBtn">W</button>
+  </div>
+
 <script>
   const betEl = document.getElementById("bet");
   const inputs = Array.from(document.querySelectorAll(".cellInput"));
   const barBottom = document.getElementById("barBottom");
-
-  // Make tapping the blue cell focus its textbox (easier on phone)
-  for (const cell of document.querySelectorAll(".cell")) {
-    cell.addEventListener("click", (e) => {
-      const inp = cell.querySelector("input");
-      if (inp && e.target !== inp) inp.focus();
-    });
-  }
+  const gridForm = document.getElementById("gridForm");
+  const fab = document.getElementById("fab");
+  const wBtn = document.getElementById("wBtn");
 
   function parseBet() {
     const n = Number(String(betEl.value ?? "").trim());
@@ -182,12 +187,9 @@
   function cellValue(raw, bet) {
     const s = String(raw ?? "").trim();
     if (s === "") return 0;
-
-    if (s.toUpperCase() === "W") return 38; // ✅ W = 38
-
+    if (s.toUpperCase() === "W") return 38;
     const n = Number(s);
     if (!Number.isFinite(n)) return 0;
-
     return n / bet;
   }
 
@@ -209,16 +211,9 @@
   }
 
   function recalc(){
-    if (isEmptyAll()) {
-      setBar("0.00", "t-white");
-      return;
-    }
-
+    if (isEmptyAll()) { setBar("0.00", "t-white"); return; }
     const bet = parseBet();
-    if (!bet) {
-      setBar("0.00", "t-white");
-      return;
-    }
+    if (!bet) { setBar("0.00", "t-white"); return; }
 
     let total = 0;
     for (const inp of inputs) total += cellValue(inp.value, bet);
@@ -240,28 +235,46 @@
   betEl.addEventListener("input", recalc);
   for (const inp of inputs) inp.addEventListener("input", recalc);
 
-  // ✅ Faster jumping: Return/Next moves to next input
-  // (Works on desktop Enter; on iPhone, "Next" / "Done" key typically maps similarly in forms)
-  function focusNext(fromIndex){
-    const next = inputs[fromIndex + 1];
-    if (next) next.focus();
-    else betEl.blur();
+  // Tap cell area focuses its input (nice on iPhone)
+  for (const cell of document.querySelectorAll(".cell")) {
+    cell.addEventListener("click", (e) => {
+      const inp = cell.querySelector("input");
+      if (inp && e.target !== inp) inp.focus();
+    });
   }
 
-  inputs.forEach((inp, idx) => {
-    inp.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        focusNext(idx);
-      }
-    });
+  // ✅ iPhone "Return/Next" -> advance: trap FORM submit
+  gridForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const active = document.activeElement;
+    const idx = inputs.indexOf(active);
+    if (idx >= 0 && idx < inputs.length - 1) inputs[idx + 1].focus();
+    else active?.blur();
   });
 
-  // Also: pressing Enter on bet field jumps to first cell
+  // Also trap Enter on bet -> first cell
   betEl.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      inputs[0]?.focus();
+    if (e.key === "Enter") { e.preventDefault(); inputs[0]?.focus(); }
+  });
+
+  // Floating W button: only show when a cell is focused
+  function updateFab(){
+    const active = document.activeElement;
+    if (inputs.includes(active)) fab.style.display = "flex";
+    else fab.style.display = "none";
+  }
+  document.addEventListener("focusin", updateFab);
+  document.addEventListener("focusout", () => setTimeout(updateFab, 0));
+
+  // Insert W into current box, then jump to next
+  wBtn.addEventListener("click", () => {
+    const active = document.activeElement;
+    const idx = inputs.indexOf(active);
+    if (idx >= 0) {
+      inputs[idx].value = "W";
+      recalc();
+      if (idx < inputs.length - 1) inputs[idx + 1].focus();
+      else inputs[idx].blur();
     }
   });
 
