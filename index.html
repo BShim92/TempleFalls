@@ -8,7 +8,7 @@
     :root { font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial; }
     body { margin: 10px; }
 
-    /* Compact layout: left (bet + total), right (grid) */
+    /* Split page down the middle */
     .layout{
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -29,7 +29,6 @@
       display: flex;
       gap: 8px;
       align-items: center;
-      margin-bottom: 8px;
     }
 
     .betLabel{
@@ -51,7 +50,7 @@
       font-weight: 800;
     }
 
-    /* Click-to-reset total bars */
+    /* Bottom click-to-reset total bar */
     .totalbar{
       border: 1px solid rgba(0,0,0,.12);
       border-radius: 10px;
@@ -67,13 +66,12 @@
     }
     .totalbar:active{ transform: translateY(1px); }
 
-    /* Total color bands */
     .t-white  { background: #ffffff; }
-    .t-red    { background: #ff5a5a; }
-    .t-orange { background: #ffb34d; }
-    .t-green  { background: #67d36b; }
+    .t-red    { background: #ff5a5a; }   /* <50 */
+    .t-orange { background: #ffb34d; }   /* <60 */
+    .t-green  { background: #67d36b; }   /* >=60 */
 
-    /* GRID: 5 columns × 2 rows (bottom two rows of the in-game grid) */
+    /* GRID: 5 columns × 2 rows */
     .grid{
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -87,10 +85,10 @@
       box-sizing: border-box;
       display: flex;
       align-items: flex-end;
-      background: #d9f2ff; /* same light-blue as prior grid rows */
+      background: #d9f2ff; /* same light-blue */
     }
 
-    /* Must allow W, so use text input */
+    /* Allow W, so use text input */
     .cell input{
       width: 100%;
       font-size: 16px;
@@ -101,7 +99,7 @@
       box-sizing: border-box;
       color: #000;
       font-weight: 800;
-      text-transform: uppercase; /* shows w as W */
+      text-transform: uppercase;
     }
 
     .hint{
@@ -120,49 +118,61 @@
   </style>
 </head>
 <body>
-  <div class="layout">
-    <!-- LEFT: Bet size + Top total bar (click bar = reset all) -->
-    <div class="panel">
-      <div class="betRow">
-        <div class="betLabel">Bet size</div>
-        <input id="bet" class="betInput" type="number" inputmode="decimal" step="any" placeholder="e.g., 8.80" />
-      </div>
 
-      <div id="barTop" class="totalbar t-white">0.00</div>
+  <div class="layout">
+    <!-- LEFT: Bet size -->
+    <div class="panel">
+      <form id="calcForm" autocomplete="off">
+        <div class="betRow">
+          <div class="betLabel">Bet size</div>
+          <input id="bet" class="betInput"
+                 type="number" inputmode="decimal" step="any"
+                 placeholder="e.g., 8.80"
+                 enterkeyhint="next" />
+        </div>
+      </form>
 
       <div class="hint">
-        Grid represents the <b>bottom two rows</b> of the Temple Falls Jungle Adventure AP state.<br/>
-        Cell value = <b>(cell / bet)</b>. Enter <b>W</b> to count as <b>28</b>.<br/>
-        Color: &lt;50 red, &lt;60 orange, ≥60 green.
+        Grid is the <b>bottom two rows</b> of the Temple Falls Jungle Adventure AP state.<br/>
+        Cell value = <b>(cell / bet)</b>. Enter <b>W</b> = <b>38</b>.<br/>
+        Total color: &lt;50 red, &lt;60 orange, ≥60 green.<br/>
+        Tip: use the keyboard <b>Next</b> key (or press Return) to jump to the next box.
       </div>
     </div>
 
-    <!-- RIGHT: 5×2 grid (all weights are 1× and not shown) -->
-    <div class="grid" id="grid">
-      <!-- Row 1 (bottom row #3 in the original state) -->
-      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
+    <!-- RIGHT: 5×2 grid -->
+    <form class="grid" id="gridForm" autocomplete="off">
+      <!-- Row 1 -->
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
 
-      <!-- Row 2 (bottom row #4 in the original state) -->
-      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
-      <div class="cell"><input class="cellInput" type="text" autocomplete="off" autocapitalize="characters" /></div>
-    </div>
+      <!-- Row 2 -->
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="done" /></div>
+    </form>
 
-    <!-- BOTTOM total bar (click bar = reset all) -->
+    <!-- BOTTOM total bar (click = reset all) -->
     <div id="barBottom" class="totalbar t-white footer">0.00</div>
   </div>
 
 <script>
   const betEl = document.getElementById("bet");
   const inputs = Array.from(document.querySelectorAll(".cellInput"));
-  const barTop = document.getElementById("barTop");
   const barBottom = document.getElementById("barBottom");
+
+  // Make tapping the blue cell focus its textbox (easier on phone)
+  for (const cell of document.querySelectorAll(".cell")) {
+    cell.addEventListener("click", (e) => {
+      const inp = cell.querySelector("input");
+      if (inp && e.target !== inp) inp.focus();
+    });
+  }
 
   function parseBet() {
     const n = Number(String(betEl.value ?? "").trim());
@@ -173,18 +183,18 @@
     const s = String(raw ?? "").trim();
     if (s === "") return 0;
 
-    if (s.toUpperCase() === "W") return 28;
+    if (s.toUpperCase() === "W") return 38; // ✅ W = 38
 
     const n = Number(s);
     if (!Number.isFinite(n)) return 0;
 
-    return n / bet; // value per your rule
+    return n / bet;
   }
 
   function bandClass(total){
     if (total < 50) return "t-red";
     if (total < 60) return "t-orange";
-    return "t-green"; // >= 60
+    return "t-green";
   }
 
   function isEmptyAll(){
@@ -192,30 +202,28 @@
     return inputs.every(inp => String(inp.value ?? "").trim() === "");
   }
 
-  function setBars(text, cls){
-    for (const el of [barTop, barBottom]) {
-      el.textContent = text;
-      el.classList.remove("t-white","t-red","t-orange","t-green");
-      el.classList.add(cls);
-    }
+  function setBar(text, cls){
+    barBottom.textContent = text;
+    barBottom.classList.remove("t-white","t-red","t-orange","t-green");
+    barBottom.classList.add(cls);
   }
 
   function recalc(){
     if (isEmptyAll()) {
-      setBars("0.00", "t-white");
+      setBar("0.00", "t-white");
       return;
     }
 
     const bet = parseBet();
     if (!bet) {
-      setBars("0.00", "t-white");
+      setBar("0.00", "t-white");
       return;
     }
 
     let total = 0;
     for (const inp of inputs) total += cellValue(inp.value, bet);
 
-    setBars(total.toFixed(2), bandClass(total));
+    setBar(total.toFixed(2), bandClass(total));
   }
 
   function resetAll(){
@@ -225,11 +233,37 @@
     betEl.focus();
   }
 
-  barTop.addEventListener("click", resetAll);
+  // Click bar = reset
   barBottom.addEventListener("click", resetAll);
 
+  // Recalc on changes
   betEl.addEventListener("input", recalc);
   for (const inp of inputs) inp.addEventListener("input", recalc);
+
+  // ✅ Faster jumping: Return/Next moves to next input
+  // (Works on desktop Enter; on iPhone, "Next" / "Done" key typically maps similarly in forms)
+  function focusNext(fromIndex){
+    const next = inputs[fromIndex + 1];
+    if (next) next.focus();
+    else betEl.blur();
+  }
+
+  inputs.forEach((inp, idx) => {
+    inp.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        focusNext(idx);
+      }
+    });
+  });
+
+  // Also: pressing Enter on bet field jumps to first cell
+  betEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      inputs[0]?.focus();
+    }
+  });
 
   recalc();
 </script>
