@@ -86,6 +86,9 @@
       color: #000;
       font-weight: 800;
       text-transform: uppercase;
+
+      /* ✅ default to “123” style keypad (digits) */
+      /* (implemented via inputmode in HTML below) */
     }
 
     .hint{
@@ -97,7 +100,7 @@
 
     .footer{ grid-column: 1 / -1; }
 
-    /* Floating W button (only shows when a cell is focused) */
+    /* Floating W helper */
     .fab{
       position: fixed;
       right: 14px;
@@ -133,8 +136,12 @@
       <form id="calcForm" autocomplete="off">
         <div class="betRow">
           <div class="betLabel">Bet size</div>
+
+          <!-- ✅ Bet uses decimal keyboard -->
           <input id="bet" class="betInput"
-                 type="number" inputmode="decimal" step="any"
+                 type="number"
+                 inputmode="decimal"
+                 step="any"
                  placeholder="e.g., 8.80"
                  enterkeyhint="next" />
         </div>
@@ -142,19 +149,20 @@
 
       <div class="hint">
         Cell value = (cell / bet). Enter W = 38. Total color: &lt;50 red, &lt;60 orange, ≥60 green.<br/>
-        Tip: keypad is numeric; use the floating <b>W</b> button when needed.
+        <b>W entry:</b> tap a cell, then tap the floating <b>W</b> button (it fills W and jumps to the next cell).
       </div>
     </div>
 
-    <!-- RIGHT: 5×2 grid (FORM makes Return/Next advance reliably on iPhone) -->
+    <!-- RIGHT: 5×2 grid -->
     <form class="grid" id="gridForm" autocomplete="off">
-      <!-- 10 inputs -->
+      <!-- Row 1 -->
       <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
       <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
       <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
       <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
       <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
 
+      <!-- Row 2 -->
       <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
       <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
       <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
@@ -179,6 +187,14 @@
   const fab = document.getElementById("fab");
   const wBtn = document.getElementById("wBtn");
 
+  // Tap cell area focuses input (nice on iPhone)
+  for (const cell of document.querySelectorAll(".cell")) {
+    cell.addEventListener("click", (e) => {
+      const inp = cell.querySelector("input");
+      if (inp && e.target !== inp) inp.focus();
+    });
+  }
+
   function parseBet() {
     const n = Number(String(betEl.value ?? "").trim());
     return Number.isFinite(n) && n > 0 ? n : null;
@@ -187,7 +203,7 @@
   function cellValue(raw, bet) {
     const s = String(raw ?? "").trim();
     if (s === "") return 0;
-    if (s.toUpperCase() === "W") return 38;
+    if (s.toUpperCase() === "W") return 38;   // ✅ W = 38
     const n = Number(s);
     if (!Number.isFinite(n)) return 0;
     return n / bet;
@@ -235,15 +251,7 @@
   betEl.addEventListener("input", recalc);
   for (const inp of inputs) inp.addEventListener("input", recalc);
 
-  // Tap cell area focuses its input (nice on iPhone)
-  for (const cell of document.querySelectorAll(".cell")) {
-    cell.addEventListener("click", (e) => {
-      const inp = cell.querySelector("input");
-      if (inp && e.target !== inp) inp.focus();
-    });
-  }
-
-  // ✅ iPhone "Return/Next" -> advance: trap FORM submit
+  // ✅ Return/Next moves to next cell: trap form submit (works well on iPhone)
   gridForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const active = document.activeElement;
@@ -252,21 +260,20 @@
     else active?.blur();
   });
 
-  // Also trap Enter on bet -> first cell
+  // Enter on bet -> first cell
   betEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); inputs[0]?.focus(); }
   });
 
-  // Floating W button: only show when a cell is focused
+  // Show W button only when a cell is focused
   function updateFab(){
     const active = document.activeElement;
-    if (inputs.includes(active)) fab.style.display = "flex";
-    else fab.style.display = "none";
+    fab.style.display = inputs.includes(active) ? "flex" : "none";
   }
   document.addEventListener("focusin", updateFab);
   document.addEventListener("focusout", () => setTimeout(updateFab, 0));
 
-  // Insert W into current box, then jump to next
+  // ✅ Tap W to fill current box with W and jump to next
   wBtn.addEventListener("click", () => {
     const active = document.activeElement;
     const idx = inputs.indexOf(active);
