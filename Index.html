@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Temple Falls Jungle Adventure — Grid Calc</title>
+  <style>
+    :root { font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial; }
+    body { margin: 10px; }
+
+    /* Compact layout: left (bet + total), right (grid) */
+    .layout{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      align-items: start;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .panel{
+      border: 1px solid rgba(0,0,0,.12);
+      border-radius: 10px;
+      background: #fafafa;
+      padding: 8px;
+    }
+
+    .betRow{
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .betLabel{
+      font-weight: 800;
+      font-size: 13px;
+      color: #000;
+      white-space: nowrap;
+    }
+
+    .betInput{
+      width: 100%;
+      font-size: 16px;
+      padding: 8px 8px;
+      border-radius: 9px;
+      border: 1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.95);
+      box-sizing: border-box;
+      color: #000;
+      font-weight: 800;
+    }
+
+    /* Click-to-reset total bars */
+    .totalbar{
+      border: 1px solid rgba(0,0,0,.12);
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 22px;
+      line-height: 1;
+      user-select: none;
+      cursor: pointer;
+      color: #000;
+      background: #fff;
+    }
+    .totalbar:active{ transform: translateY(1px); }
+
+    /* Total color bands */
+    .t-white  { background: #ffffff; }
+    .t-red    { background: #ff5a5a; }
+    .t-orange { background: #ffb34d; }
+    .t-green  { background: #67d36b; }
+
+    /* GRID: 4 columns × 2 rows (bottom two rows of the in-game 4×4) */
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .cell{
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,.12);
+      min-height: 56px;
+      padding: 6px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: flex-end;
+      background: #d9f2ff; /* same light-blue as prior grid rows */
+    }
+
+    /* Must allow W, so use text input */
+    .cell input{
+      width: 100%;
+      font-size: 16px;
+      padding: 8px 8px;
+      border-radius: 9px;
+      border: 1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.88);
+      box-sizing: border-box;
+      color: #000;
+      font-weight: 800;
+      text-transform: uppercase; /* shows w as W */
+    }
+
+    .hint{
+      margin-top: 8px;
+      font-size: 12px;
+      color: #333;
+      line-height: 1.2;
+    }
+
+    .footer{ grid-column: 1 / -1; }
+
+    @media (max-width: 520px){
+      .layout{ grid-template-columns: 1fr; }
+      .footer{ grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- LEFT: Bet size + Top total bar (click bar = reset all) -->
+    <div class="panel">
+      <div class="betRow">
+        <div class="betLabel">Bet size</div>
+        <input id="bet" class="betInput" type="number" inputmode="decimal" step="any" placeholder="e.g., 8.80" />
+      </div>
+
+      <div id="barTop" class="totalbar t-white">0.00</div>
+
+      <div class="hint">
+        Grid represents the <b>bottom two rows</b> of the Temple Falls Jungle Adventure state.<br/>
+        Cell value = <b>(cell / bet)</b>. Enter <b>W</b> to count as <b>28</b>.
+      </div>
+    </div>
+
+    <!-- RIGHT: 4×2 grid (all weights are 1× and not shown) -->
+    <div class="grid" id="grid">
+      <!-- Row 1 (bottom row #3 in the original 4×4) -->
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
+
+      <!-- Row 2 (bottom row #4 in the original 4×4) -->
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" /></div>
+    </div>
+
+    <!-- BOTTOM total bar (click bar = reset all) -->
+    <div id="barBottom" class="totalbar t-white footer">0.00</div>
+  </div>
+
+<script>
+  const betEl = document.getElementById("bet");
+  const inputs = Array.from(document.querySelectorAll(".cellInput"));
+  const barTop = document.getElementById("barTop");
+  const barBottom = document.getElementById("barBottom");
+
+  function parseBet() {
+    const n = Number(String(betEl.value ?? "").trim());
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  function cellValue(raw, bet) {
+    const s = String(raw ?? "").trim();
+    if (s === "") return 0;
+
+    if (s.toUpperCase() === "W") return 28;
+
+    const n = Number(s);
+    if (!Number.isFinite(n)) return 0;
+
+    // rule: cell value = number / bet size
+    return n / bet;
+  }
+
+  function bandClass(total){
+    if (total < 50) return "t-red";
+    if (total < 60) return "t-orange";
+    return "t-green"; // >= 60
+  }
+
+  function isEmptyAll(){
+    if (String(betEl.value ?? "").trim() !== "") return false;
+    return inputs.every(inp => String(inp.value ?? "").trim() === "");
+  }
+
+  function setBars(text, cls){
+    for (const el of [barTop, barBottom]) {
+      el.textContent = text;
+      el.classList.remove("t-white","t-red","t-orange","t-green");
+      el.classList.add(cls);
+    }
+  }
+
+  function recalc(){
+    if (isEmptyAll()) {
+      setBars("0.00", "t-white");
+      return;
+    }
+
+    const bet = parseBet();
+    if (!bet) {
+      // bet missing/invalid but user typed something — keep white and show 0
+      setBars("0.00", "t-white");
+      return;
+    }
+
+    let total = 0;
+    for (const inp of inputs) total += cellValue(inp.value, bet);
+
+    const out = total.toFixed(2);
+    setBars(out, bandClass(total));
+  }
+
+  function resetAll(){
+    betEl.value = "";
+    for (const inp of inputs) inp.value = "";
+    recalc();
+    betEl.focus();
+  }
+
+  // Click bars = reset
+  barTop.addEventListener("click", resetAll);
+  barBottom.addEventListener("click", resetAll);
+
+  // Recalc on changes
+  betEl.addEventListener("input", recalc);
+  for (const inp of inputs) {
+    inp.addEventListener("input", recalc);
+  }
+
+  recalc();
+</script>
+</body>
+</html>
