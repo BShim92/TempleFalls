@@ -64,6 +64,7 @@
       grid-template-columns: repeat(5, 1fr);
       gap: 8px;
     }
+
     .cell{
       border-radius: 10px;
       border: 1px solid rgba(0,0,0,.12);
@@ -72,7 +73,13 @@
       box-sizing: border-box;
       display: flex;
       align-items: flex-end;
-      background: #d9f2ff;
+      background: #d9f2ff; /* default */
+      transition: background 120ms ease;
+    }
+
+    .cell.rainbow{
+      background: linear-gradient(90deg,
+        #ff5a5a, #ffb34d, #ffe066, #67d36b, #59c6ff, #9b6bff, #ff5ad9);
     }
 
     .cell input{
@@ -85,10 +92,8 @@
       box-sizing: border-box;
       color: #000;
       font-weight: 800;
-      text-transform: uppercase;
-
-      /* ✅ default to “123” style keypad (digits) */
-      /* (implemented via inputmode in HTML below) */
+      /* keeps '.' visible and prevents iOS from trying to “smart” it */
+      autocapitalize: none;
     }
 
     .hint{
@@ -100,22 +105,22 @@
 
     .footer{ grid-column: 1 / -1; }
 
-    /* Floating W helper */
+    /* Floating "." helper (always visible, lifted above keyboard-ish) */
     .fab{
       position: fixed;
       right: 14px;
-      bottom: 14px;
-      display: none;
+      bottom: calc(110px + env(safe-area-inset-bottom));
+      display: flex;
       gap: 8px;
       align-items: center;
-      z-index: 9999;
+      z-index: 99999;
     }
     .fab button{
       border: 1px solid rgba(0,0,0,.18);
       background: #fff;
       border-radius: 12px;
       padding: 12px 14px;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 900;
       cursor: pointer;
       box-shadow: 0 6px 16px rgba(0,0,0,.12);
@@ -125,6 +130,7 @@
     @media (max-width: 520px){
       .layout{ grid-template-columns: 1fr; }
       .footer{ grid-column: auto; }
+      .fab{ bottom: calc(90px + env(safe-area-inset-bottom)); }
     }
   </style>
 </head>
@@ -137,7 +143,7 @@
         <div class="betRow">
           <div class="betLabel">Bet size</div>
 
-          <!-- ✅ Bet uses decimal keyboard -->
+          <!-- Bet uses decimal keyboard -->
           <input id="bet" class="betInput"
                  type="number"
                  inputmode="decimal"
@@ -148,35 +154,37 @@
       </form>
 
       <div class="hint">
-        Cell value = (cell / bet). Enter W = 38. Total color: &lt;50 red, &lt;60 orange, ≥60 green.<br/>
-        <b>W entry:</b> tap a cell, then tap the floating <b>W</b> button (it fills W and jumps to the next cell).
+        Cell value = (cell / bet). Use <b>.</b> (just a dot) to count as <b>38</b>.<br/>
+        Decimal entry (anything containing a dot) = <b>rainbow</b> cell.<br/>
+        Otherwise cell color is <b>light-gold → gold</b> based on the entered number 1–200.<br/>
+        Total color: &lt;50 red, &lt;60 orange, ≥60 green. Tap total bar to reset.
       </div>
     </div>
 
     <!-- RIGHT: 5×2 grid -->
     <form class="grid" id="gridForm" autocomplete="off">
       <!-- Row 1 -->
-      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
 
       <!-- Row 2 -->
-      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="numeric" pattern="[0-9Ww]*" autocorrect="off" spellcheck="false" enterkeyhint="done" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
+      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="done" /></div>
     </form>
 
     <!-- BOTTOM total bar (click = reset all) -->
     <div id="barBottom" class="totalbar t-white footer">0.00</div>
   </div>
 
-  <!-- Floating W helper -->
-  <div class="fab" id="fab">
-    <button type="button" id="wBtn">W</button>
+  <!-- Floating dot helper: inserts "." into the last focused cell and moves next -->
+  <div class="fab">
+    <button type="button" id="dotBtn">.</button>
   </div>
 
 <script>
@@ -184,28 +192,35 @@
   const inputs = Array.from(document.querySelectorAll(".cellInput"));
   const barBottom = document.getElementById("barBottom");
   const gridForm = document.getElementById("gridForm");
-  const fab = document.getElementById("fab");
-  const wBtn = document.getElementById("wBtn");
+  const dotBtn = document.getElementById("dotBtn");
 
-  // Tap cell area focuses input (nice on iPhone)
-  for (const cell of document.querySelectorAll(".cell")) {
+  let lastFocusedIndex = 0;
+
+  // Tap cell area focuses input (nice on iPhone) + remembers it
+  document.querySelectorAll(".cell").forEach((cell) => {
     cell.addEventListener("click", (e) => {
       const inp = cell.querySelector("input");
       if (inp && e.target !== inp) inp.focus();
     });
-  }
+  });
+  inputs.forEach((inp, idx) => inp.addEventListener("focus", () => lastFocusedIndex = idx));
 
   function parseBet() {
     const n = Number(String(betEl.value ?? "").trim());
     return Number.isFinite(n) && n > 0 ? n : null;
   }
 
+  // "." token counts as 38 (W replacement)
   function cellValue(raw, bet) {
     const s = String(raw ?? "").trim();
     if (s === "") return 0;
-    if (s.toUpperCase() === "W") return 38;   // ✅ W = 38
+
+    if (s === ".") return 38;
+
+    // If user types a decimal number anyway, still compute n/bet
     const n = Number(s);
     if (!Number.isFinite(n)) return 0;
+
     return n / bet;
   }
 
@@ -226,7 +241,51 @@
     barBottom.classList.add(cls);
   }
 
+  function clamp(x, lo, hi){ return Math.max(lo, Math.min(hi, x)); }
+
+  // Color rules:
+  // - contains "." => rainbow
+  // - otherwise gold scale by RAW number (1..200)
+  function setCellColor(inp){
+    const cell = inp.closest(".cell");
+    const s = String(inp.value ?? "").trim();
+
+    // empty = default blue
+    if (s === "") {
+      cell.classList.remove("rainbow");
+      cell.style.background = "#d9f2ff";
+      return;
+    }
+
+    // any dot anywhere => rainbow
+    if (s.includes(".")) {
+      cell.classList.add("rainbow");
+      cell.style.background = ""; // let .rainbow background apply
+      return;
+    }
+
+    // integer -> gold scale
+    const n = Number(s);
+    if (!Number.isFinite(n)) {
+      cell.classList.remove("rainbow");
+      cell.style.background = "#d9f2ff";
+      return;
+    }
+
+    cell.classList.remove("rainbow");
+
+    const v = clamp(n, 1, 200);
+    const t = (v - 1) / 199;         // 0..1
+    const light = 92 - t * 22;       // light gold -> deeper gold
+    const sat = 90;
+    const hue = 45;
+    cell.style.background = `hsl(${hue} ${sat}% ${light}%)`;
+  }
+
   function recalc(){
+    // update cell colors first
+    inputs.forEach(setCellColor);
+
     if (isEmptyAll()) { setBar("0.00", "t-white"); return; }
     const bet = parseBet();
     if (!bet) { setBar("0.00", "t-white"); return; }
@@ -244,19 +303,20 @@
     betEl.focus();
   }
 
-  // Click bar = reset
+  // Click total bar = reset
   barBottom.addEventListener("click", resetAll);
 
   // Recalc on changes
   betEl.addEventListener("input", recalc);
-  for (const inp of inputs) inp.addEventListener("input", recalc);
+  inputs.forEach(inp => inp.addEventListener("input", recalc));
 
-  // ✅ Return/Next moves to next cell: trap form submit (works well on iPhone)
+  // Return/Next moves to next cell: trap form submit (works well on iPhone)
   gridForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const active = document.activeElement;
     const idx = inputs.indexOf(active);
-    if (idx >= 0 && idx < inputs.length - 1) inputs[idx + 1].focus();
+    const i = idx >= 0 ? idx : lastFocusedIndex;
+    if (i >= 0 && i < inputs.length - 1) inputs[i + 1].focus();
     else active?.blur();
   });
 
@@ -265,24 +325,13 @@
     if (e.key === "Enter") { e.preventDefault(); inputs[0]?.focus(); }
   });
 
-  // Show W button only when a cell is focused
-  function updateFab(){
-    const active = document.activeElement;
-    fab.style.display = inputs.includes(active) ? "flex" : "none";
-  }
-  document.addEventListener("focusin", updateFab);
-  document.addEventListener("focusout", () => setTimeout(updateFab, 0));
-
-  // ✅ Tap W to fill current box with W and jump to next
-  wBtn.addEventListener("click", () => {
-    const active = document.activeElement;
-    const idx = inputs.indexOf(active);
-    if (idx >= 0) {
-      inputs[idx].value = "W";
-      recalc();
-      if (idx < inputs.length - 1) inputs[idx + 1].focus();
-      else inputs[idx].blur();
-    }
+  // Floating "." button: inserts "." into last focused cell, then jumps next
+  dotBtn.addEventListener("click", () => {
+    const i = Math.max(0, Math.min(inputs.length - 1, lastFocusedIndex));
+    inputs[i].value = ".";
+    recalc();
+    if (i < inputs.length - 1) inputs[i + 1].focus();
+    else inputs[i].blur();
   });
 
   recalc();
