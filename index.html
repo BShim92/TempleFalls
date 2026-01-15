@@ -24,7 +24,7 @@
       padding: 8px;
     }
 
-    .betRow{ display:flex; gap:8px; align-items:center; }
+    .betRow{ display:flex; gap:8px; align-items:center; margin-bottom: 8px; }
     .betLabel{ font-weight:800; font-size:13px; white-space:nowrap; }
 
     .betInput{
@@ -39,6 +39,33 @@
       font-weight: 800;
     }
 
+    .actions{
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .btn{
+      border: 1px solid rgba(0,0,0,.18);
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,.08);
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .hint{
+      margin-top: 8px;
+      font-size: 12px;
+      color: #333;
+      line-height: 1.2;
+    }
+
+    /* Bottom total bar */
     .totalbar{
       border: 1px solid rgba(0,0,0,.12);
       border-radius: 10px;
@@ -59,10 +86,19 @@
     .t-orange { background: #ffb34d; }   /* <60 */
     .t-green  { background: #67d36b; }   /* >=60 */
 
+    /* Grid container is vertical list of rows */
     .grid{
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      display: flex;
+      flex-direction: column;
       gap: 8px;
+    }
+
+    /* Each row: 5 cells + 1 row total */
+    .row{
+      display: grid;
+      grid-template-columns: repeat(5, 1fr) 0.85fr;
+      gap: 8px;
+      align-items: stretch;
     }
 
     .cell{
@@ -95,11 +131,20 @@
       autocapitalize: none;
     }
 
-    .hint{
-      margin-top: 8px;
-      font-size: 12px;
-      color: #333;
-      line-height: 1.2;
+    .rowTotal{
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,.12);
+      background: #f3f3f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 16px;
+      color: #000;
+      min-height: 56px;
+      padding: 6px;
+      box-sizing: border-box;
+      user-select: none;
     }
 
     .footer{ grid-column: 1 / -1; }
@@ -130,6 +175,7 @@
       .layout{ grid-template-columns: 1fr; }
       .footer{ grid-column: auto; }
       .fab{ bottom: calc(90px + env(safe-area-inset-bottom)); }
+      .row{ grid-template-columns: repeat(5, 1fr) 1fr; }
     }
   </style>
 </head>
@@ -147,56 +193,108 @@
                  placeholder="e.g., 8.80"
                  enterkeyhint="next" />
         </div>
+
+        <div class="actions">
+          <button class="btn" type="button" id="addRowBtn">+ Row (top)</button>
+        </div>
       </form>
 
-      <div class="hint">Put a <b>.</b> to represent a wheel</div>
+      <div class="hint">
+        Put a <b>.</b> to represent a wheel.<br/>
+        (Rows you add at the top are <b>excluded</b> from the bottom total.)
+      </div>
     </div>
 
+    <!-- Grid form (Return/Next can move through inputs) -->
     <form class="grid" id="gridForm" autocomplete="off">
-      <!-- Row 1 -->
-      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-
-      <!-- Row 2 -->
-      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="next" /></div>
-      <div class="cell"><input class="cellInput" type="text" inputmode="decimal" pattern="[0-9.]*" autocorrect="off" spellcheck="false" enterkeyhint="done" /></div>
+      <div id="rows"></div>
     </form>
 
+    <!-- BOTTOM total bar (click = reset all) -->
     <div id="barBottom" class="totalbar t-white footer">0.00</div>
   </div>
 
+  <!-- Floating dot helper -->
   <div class="fab">
     <button type="button" id="dotBtn">.</button>
   </div>
 
 <script>
   const betEl = document.getElementById("bet");
-  const inputs = Array.from(document.querySelectorAll(".cellInput"));
   const barBottom = document.getElementById("barBottom");
   const gridForm = document.getElementById("gridForm");
   const dotBtn = document.getElementById("dotBtn");
+  const addRowBtn = document.getElementById("addRowBtn");
+  const rowsHost = document.getElementById("rows");
 
-  let lastFocusedIndex = 0;
+  // Two base rows (included in bottom total)
+  const BASE_ROWS = 2;
+  let lastFocused = null; // store the last focused input element
 
-  document.querySelectorAll(".cell").forEach((cell) => {
-    cell.addEventListener("click", (e) => {
-      const inp = cell.querySelector("input");
-      if (inp && e.target !== inp) inp.focus();
-    });
-  });
-  inputs.forEach((inp, idx) => inp.addEventListener("focus", () => lastFocusedIndex = idx));
+  function makeRow({ included, enterHintLast = "done" } = {}) {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.dataset.included = included ? "true" : "false";
+
+    // 5 cells
+    for (let i = 0; i < 5; i++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+
+      const inp = document.createElement("input");
+      inp.className = "cellInput";
+      inp.type = "text";
+      inp.setAttribute("inputmode", "decimal");
+      inp.setAttribute("pattern", "[0-9.]*");
+      inp.setAttribute("autocorrect", "off");
+      inp.setAttribute("spellcheck", "false");
+      inp.setAttribute("enterkeyhint", "next");
+
+      cell.appendChild(inp);
+      row.appendChild(cell);
+
+      // Tap anywhere on cell focuses input (phone-friendly)
+      cell.addEventListener("click", (e) => {
+        if (e.target !== inp) inp.focus();
+      });
+
+      inp.addEventListener("focus", () => { lastFocused = inp; });
+      inp.addEventListener("input", () => { recalc(); });
+    }
+
+    // row total box
+    const total = document.createElement("div");
+    total.className = "rowTotal";
+    total.textContent = "0.00";
+    row.appendChild(total);
+
+    return row;
+  }
+
+  function initRows() {
+    rowsHost.innerHTML = "";
+    // base rows at the bottom of any added rows
+    for (let r = 0; r < BASE_ROWS; r++) {
+      rowsHost.appendChild(makeRow({ included: true }));
+    }
+    refreshEnterHints();
+    recalc();
+  }
+
+  function getAllRows() {
+    return Array.from(rowsHost.querySelectorAll(".row"));
+  }
+
+  function getAllInputs() {
+    return Array.from(rowsHost.querySelectorAll(".cellInput"));
+  }
 
   function parseBet() {
     const n = Number(String(betEl.value ?? "").trim());
     return Number.isFinite(n) && n > 0 ? n : null;
   }
 
+  // "." token counts as 38 (wheel)
   function cellValue(raw, bet) {
     const s = String(raw ?? "").trim();
     if (s === "") return 0;
@@ -206,25 +304,11 @@
     return n / bet;
   }
 
-  function bandClass(total){
-    if (total < 50) return "t-red";
-    if (total < 60) return "t-orange";
-    return "t-green";
-  }
-
-  function isEmptyAll(){
-    if (String(betEl.value ?? "").trim() !== "") return false;
-    return inputs.every(inp => String(inp.value ?? "").trim() === "");
-  }
-
-  function setBar(text, cls){
-    barBottom.textContent = text;
-    barBottom.classList.remove("t-white","t-red","t-orange","t-green");
-    barBottom.classList.add(cls);
-  }
-
   function clamp(x, lo, hi){ return Math.max(lo, Math.min(hi, x)); }
 
+  // Color rules:
+  // - contains "." => rainbow
+  // - otherwise gold scale by RAW number (1..200)
   function setCellColor(inp){
     const cell = inp.closest(".cell");
     const s = String(inp.value ?? "").trim();
@@ -237,7 +321,7 @@
 
     if (s.includes(".")) {
       cell.classList.add("rainbow");
-      cell.style.background = "";
+      cell.style.background = ""; // let rainbow class apply
       return;
     }
 
@@ -251,60 +335,116 @@
     cell.classList.remove("rainbow");
 
     const v = clamp(n, 1, 200);
-    const t = (v - 1) / 199;
-    const light = 92 - t * 22;
-    const sat = 90;
-    const hue = 45;
-    cell.style.background = `hsl(${hue} ${sat}% ${light}%)`;
+    const t = (v - 1) / 199;     // 0..1
+    const light = 92 - t * 22;   // light gold -> deeper gold
+    cell.style.background = `hsl(45 90% ${light}%)`;
+  }
+
+  function bandClass(total){
+    if (total < 50) return "t-red";
+    if (total < 60) return "t-orange";
+    return "t-green";
+  }
+
+  function isEmptyAll(){
+    if (String(betEl.value ?? "").trim() !== "") return false;
+    return getAllInputs().every(inp => String(inp.value ?? "").trim() === "");
+  }
+
+  function setBar(text, cls){
+    barBottom.textContent = text;
+    barBottom.classList.remove("t-white","t-red","t-orange","t-green");
+    barBottom.classList.add(cls);
   }
 
   function recalc(){
-    inputs.forEach(setCellColor);
-
-    if (isEmptyAll()) { setBar("0.00", "t-white"); return; }
+    const rows = getAllRows();
     const bet = parseBet();
-    if (!bet) { setBar("0.00", "t-white"); return; }
 
-    let total = 0;
-    for (const inp of inputs) total += cellValue(inp.value, bet);
+    // update cell colors + row totals
+    let bottomTotal = 0;
 
-    setBar(total.toFixed(2), bandClass(total));
+    for (const row of rows) {
+      const rowInputs = Array.from(row.querySelectorAll(".cellInput"));
+      rowInputs.forEach(setCellColor);
+
+      let rowSum = 0;
+      if (bet) {
+        for (const inp of rowInputs) rowSum += cellValue(inp.value, bet);
+      }
+
+      row.querySelector(".rowTotal").textContent = rowSum.toFixed(2);
+
+      if (row.dataset.included === "true" && bet) bottomTotal += rowSum;
+    }
+
+    if (isEmptyAll() || !bet) {
+      setBar("0.00", "t-white");
+      return;
+    }
+
+    setBar(bottomTotal.toFixed(2), bandClass(bottomTotal));
   }
 
   function resetAll(){
     betEl.value = "";
-    for (const inp of inputs) inp.value = "";
-    recalc();
+
+    // remove any added rows (keep only the 2 base rows)
+    initRows(); // rebuilds base rows fresh
+
     betEl.focus();
   }
 
+  // Click total bar = reset
   barBottom.addEventListener("click", resetAll);
 
   betEl.addEventListener("input", recalc);
-  inputs.forEach(inp => inp.addEventListener("input", recalc));
+  betEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); getAllInputs()[0]?.focus(); }
+  });
 
+  // Add new row at TOP (excluded from bottom total)
+  addRowBtn.addEventListener("click", () => {
+    const newRow = makeRow({ included: false });
+    rowsHost.prepend(newRow);
+    refreshEnterHints();
+    // focus first input of new row
+    newRow.querySelector(".cellInput")?.focus();
+    recalc();
+  });
+
+  // Floating "." button: inserts "." into last focused cell, then jumps next
+  dotBtn.addEventListener("click", () => {
+    const inputs = getAllInputs();
+    if (!inputs.length) return;
+
+    let idx = lastFocused ? inputs.indexOf(lastFocused) : -1;
+    if (idx < 0) idx = 0;
+
+    inputs[idx].value = ".";
+    recalc();
+
+    if (idx < inputs.length - 1) inputs[idx + 1].focus();
+    else inputs[idx].blur();
+  });
+
+  // Make Return/Next move to next input (form submit handler)
   gridForm.addEventListener("submit", (e) => {
     e.preventDefault();
+    const inputs = getAllInputs();
     const active = document.activeElement;
     const idx = inputs.indexOf(active);
-    const i = idx >= 0 ? idx : lastFocusedIndex;
-    if (i >= 0 && i < inputs.length - 1) inputs[i + 1].focus();
+    if (idx >= 0 && idx < inputs.length - 1) inputs[idx + 1].focus();
     else active?.blur();
   });
 
-  betEl.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") { e.preventDefault(); inputs[0]?.focus(); }
-  });
+  // Set enterkeyhint="done" only on the very last input in the whole grid
+  function refreshEnterHints(){
+    const inputs = getAllInputs();
+    inputs.forEach((inp, i) => inp.setAttribute("enterkeyhint", i === inputs.length - 1 ? "done" : "next"));
+  }
 
-  dotBtn.addEventListener("click", () => {
-    const i = Math.max(0, Math.min(inputs.length - 1, lastFocusedIndex));
-    inputs[i].value = ".";
-    recalc();
-    if (i < inputs.length - 1) inputs[i + 1].focus();
-    else inputs[i].blur();
-  });
-
-  recalc();
+  initRows();
 </script>
 </body>
 </html>
